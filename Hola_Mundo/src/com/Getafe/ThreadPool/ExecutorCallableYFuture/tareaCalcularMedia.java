@@ -7,7 +7,7 @@ public class tareaCalcularMedia implements Callable<Double> {
 	private int rangoInicio;
 	private int rango;
 	private int[][] matriz;
-	private double resultado = 0;
+	private double suma = 0;
 	
 	public tareaCalcularMedia(int inicio, int fin, int[][] matriz) {
 		this.rangoInicio = inicio;
@@ -17,16 +17,12 @@ public class tareaCalcularMedia implements Callable<Double> {
 
 	@Override
 	public Double call() throws Exception {
-		int suma = 0;
-		int contador = 0;
 		for (int row = this.rangoInicio; row < this.rango; row++) {
             for (int col = 0; col < this.matriz.length; col++) {
-            	suma += this.matriz[row][col];
-            	contador++;
+            	this.suma += this.matriz[row][col];
             }
         }
-		this.resultado = (suma/contador);
-        return this.resultado;
+		return this.suma;
 	}
 
 }

@@ -14,7 +14,7 @@ public class MainThreadPool_Media {
 	public static void main(String[] args) throws InterruptedException, ExecutionException {
 
 		// Crear una matriz cuadrada de ejemplo
-		int tamanioMatriz = 5; // tamaño de la matriz
+		int tamanioMatriz = 10000; // tamaño de la matriz
 		int[][] matriz = new int[tamanioMatriz][tamanioMatriz];
 
 		rellenarMatrizConAleatorios(matriz);
@@ -51,7 +51,7 @@ public class MainThreadPool_Media {
 		}
 
 		// Mostrar los resultados de todos los hilos
-		printResultadosTareaMedia(resultadosMedia, tamanioMatriz, numProcesadores);
+		printResultadosTareaMedia(resultadosMedia, tamanioMatriz);
 		printResultadosTareaParesImpares(resultadosParesImpares);
 
 		// Apagar el executor
@@ -76,13 +76,12 @@ public class MainThreadPool_Media {
 
 	}
 
-	private static void printResultadosTareaMedia(List<Future<Double>> resultadosMedia, int tamanio,
-			int numProcesadores) throws InterruptedException, ExecutionException {
+	private static void printResultadosTareaMedia(List<Future<Double>> resultadosMedia, int tamanio) throws InterruptedException, ExecutionException {
 		double resultado = 0;
 		for (Future<Double> futuro : resultadosMedia) {
-			resultado =+ futuro.get();
+			resultado += futuro.get();
 		}
-		System.out.println("La media de los valores de la matriz es: " + resultado);
+		System.out.println("La media de los valores de la matriz es: " + (resultado / (tamanio * tamanio)));
 	}
 	
 	private static void rellenarMatrizConAleatorios(int[][] matriz) {
