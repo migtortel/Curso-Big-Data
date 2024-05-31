@@ -2,6 +2,7 @@ package com.Getafe.ThreadPool.ExecutorCallableYFuture;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -11,79 +12,89 @@ import java.util.concurrent.Future;
 public class MainThreadPool_Media {
 
 	public static void main(String[] args) throws InterruptedException, ExecutionException {
+
 		// Crear una matriz cuadrada de ejemplo
-        int n = 1000; // tamaño de la matriz
-        int[][] matriz = new int[n][n];
-        
-        // Rellenar la matriz con valores aleatorios entre 1 y 100
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                matriz[i][j] = (int)(Math.random() * 100) + 1;
-            }
-        }
-        
-        // Crear un thread pool con 16 hilos
-        int numProcesadores = 16;
-        ExecutorService executor = Executors.newFixedThreadPool(numProcesadores);
+		int tamanioMatriz = 10; // tamaño de la matriz
+		int[][] matriz = new int[tamanioMatriz][tamanioMatriz];
 
-        // Lista para guardar los futuros resultados
-        List<Future<Integer>> resultadosMedia = new ArrayList<>();
-        List<Future<int[]>> resultadosParesImpares = new ArrayList<>();
-        // Dividir la matriz en partes iguales para cada hilo
-        int rango = n / numProcesadores;
-        for (int i = 0; i < numProcesadores; i++) {
-            final int inicio = i * rango;
-            final int fin = (i == numProcesadores - 1) ? n : inicio + rango;
-            
-            //declara el callable como una funcion lambda, cada tarea es una lambda que no recibe parametros y que devuelve 
-            //un array unidimensional en el que almacena en la posicion 0 los pares y en la 1 los impares
-            Callable<Integer> tareaMedia = () -> {
-                int resultado = 0; // resultado[0] para pares, resultado[1] para impares
-                for (int row = inicio; row < fin; row++) {
-                    for (int col = 0; col < n; col++) {
-                    	resultado += matriz[row][col];
-                    }
-                }
-                return resultado;
-            };
-            Callable<int[]> tareaParesImpares = () -> {
-            	int[] resultado = new int[2]; // resultado[0] para pares, resultado[1] para impares
-                for (int row = inicio; row < fin; row++) {
-                    for (int col = 0; col < n; col++) {
-                        if (matriz[row][col] % 2 == 0) {
-                            resultado[0]++;
-                        } else {
-                            resultado[1]++;
-                        }
-                    }
-                }
-                return resultado;
-            };
-            //en el future se almacenan los resultados que devuelve la tarea, cada future contiene un array de dos posiciones
-            //por eso se almacenan en una lista, porque son tantos arrays como hilos lanzados, y por eso hay que iterar sobre
-            //ellos 
-            Future<Integer> futuro = executor.submit(tareaMedia);
-            Future<int[]> futuroPares = executor.submit(tareaParesImpares);
-            resultadosMedia.add(futuro);
-            resultadosParesImpares.add(futuroPares);
-        }
+		rellenarMatrizConAleatorios(tamanioMatriz, matriz);
 
-        // Sumar los resultados de todos los hilos
-        int resultado = 0;
-        for (Future<Integer> futuro : resultadosMedia) {
-        	/*
-        	 * La llamada al método get() es bloqueante, lo que significa que esperará hasta que el resultado asociado 
-        	 * al Future esté disponible. Por lo tanto, cuando este bucle termina, significa que todas las tareas han 
-        	 * finalizado y los resultados están listos para ser utilizados.
-        	 */
-            resultado =+ futuro.get(); 
-        }
+		// Crear un thread pool con tantos hilos como procesadores
+		int numProcesadores = 16;
+		ExecutorService executor = Executors.newFixedThreadPool(numProcesadores);
 
-        // Imprimir los resultados
-        System.out.println("La media de los valores de la matriz son: "+ resultado /n);
+		// Lista para guardar los futuros resultados
+		List<Future<Double>> resultadosMedia = new ArrayList<>();
+		List<Future<int[]>> resultadosParesImpares = new ArrayList<>();
 
-        // Apagar el executor
-        executor.shutdown();
-    }
+		// Dividir la matriz en partes iguales para cada hilo
+		int rango = tamanioMatriz / (numProcesadores / 2);
+		// El rango es numProcesadores / 2 para dividir las tareas
+		for (int i = 0; i < numProcesadores / 2; i++) {
+			final int inicio = i * rango;
+			final int fin = (i == (numProcesadores / 2) - 1) ? tamanioMatriz : inicio + rango;
+
+			Callable<Double> tareaMedia = new tareaCalcularMedia(inicio, fin, matriz);
+			Future<Double> futuro = executor.submit(tareaMedia);
+			resultadosMedia.add(futuro);
+			
+		}
+		// Tenemos dos bucles porque de lo contrario cada hilo haria dos tareas, de esta forma hacemos que los 
+		// primeros hilos calculen la media y los ultimos calculen los pares e impares
+		for (int i = numProcesadores / 2; i < numProcesadores; i++) {
+            final int inicio = (i - numProcesadores / 2) * rango;
+            final int fin = (i == numProcesadores - 1) ? tamanioMatriz : inicio + rango;
+			
+			Callable<int[]> tareaParesImpares = new tareaCalcularParesImpares(inicio, fin, matriz);
+			Future<int[]> futuroPares = executor.submit(tareaParesImpares);
+			resultadosParesImpares.add(futuroPares);
+		}
+
+		// Mostrar los resultados de todos los hilos
+		printResultadosTareaMedia(resultadosMedia, tamanioMatriz, numProcesadores);
+		printResultadosTareaParesImpares(resultadosParesImpares);
+
+		// Apagar el executor
+		executor.shutdown();
+	}
+
+	private static void rellenarMatrizConAleatorios(int tamanioMatriz, int[][] matriz) {
+		Random rand = new Random();
+		for (int i = 0; i < tamanioMatriz; i++) {
+			for (int j = 0; j < tamanioMatriz; j++) {
+				matriz[i][j] = rand.nextInt(100) + 1;
+				System.out.print(matriz[i][j] +" ");
+			}
+			System.out.println();
+		}
+
+	}
+
+	private static void printResultadosTareaParesImpares(List<Future<int[]>> resultadosParesImpares)
+			throws InterruptedException, ExecutionException {
+		// Sumar los resultados de todos los hilos
+		int totalPares = 0;
+		int totalImpares = 0;
+
+		for (Future<int[]> futuro : resultadosParesImpares) {
+			int[] resultado = futuro.get();
+			totalPares += resultado[0];
+			totalImpares += resultado[1];
+		}
+		
+		// Imprimir los resultados
+		System.out.println("Total de números pares: " + totalPares);
+		System.out.println("Total de números impares: " + totalImpares);
+
+	}
+
+	private static void printResultadosTareaMedia(List<Future<Double>> resultadosMedia, int tamanio,
+			int numProcesadores) throws InterruptedException, ExecutionException {
+		double resultado = 0;
+		for (Future<Double> futuro : resultadosMedia) {
+			resultado = +futuro.get();
+		}
+		System.out.println("La media de los valores de la matriz es: " + (resultado / (tamanio * tamanio)));
+	}
 
 }
