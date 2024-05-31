@@ -25,8 +25,7 @@ public class tareaCalcularMedia implements Callable<Double> {
             	contador++;
             }
         }
-		this.resultado = (suma/contador);
-        return this.resultado;
+        return (double) (suma/contador);
 	}
 
 }

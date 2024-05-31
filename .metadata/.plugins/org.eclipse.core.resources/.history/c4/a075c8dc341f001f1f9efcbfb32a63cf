@@ -18,15 +18,14 @@ public class tareaCalcularMedia implements Callable<Double> {
 	@Override
 	public Double call() throws Exception {
 		int suma = 0;
-		int contador = 0;
+		int contador =0;
 		for (int row = this.rangoInicio; row < this.rango; row++) {
             for (int col = 0; col < this.matriz.length; col++) {
             	suma += this.matriz[row][col];
             	contador++;
             }
         }
-		this.resultado = (suma/contador);
-        return this.resultado;
+        return (double) (suma/contador);
 	}
 
 }

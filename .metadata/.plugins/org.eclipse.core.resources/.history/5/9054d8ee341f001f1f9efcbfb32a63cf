@@ -17,7 +17,7 @@ public class MainThreadPool_Media {
 		int tamanioMatriz = 5; // tamaño de la matriz
 		int[][] matriz = new int[tamanioMatriz][tamanioMatriz];
 
-		rellenarMatrizConAleatorios(matriz);
+		rellenarMatrizConAleatorios(tamanioMatriz, matriz);
 
 		// Crear un thread pool con tantos hilos como procesadores
 		int numProcesadores = 16;

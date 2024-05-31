@@ -14,10 +14,10 @@ public class MainThreadPool_Media {
 	public static void main(String[] args) throws InterruptedException, ExecutionException {
 
 		// Crear una matriz cuadrada de ejemplo
-		int tamanioMatriz = 5; // tamaño de la matriz
+		int tamanioMatriz = 3; // tamaño de la matriz
 		int[][] matriz = new int[tamanioMatriz][tamanioMatriz];
 
-		rellenarMatrizConAleatorios(matriz);
+		rellenarMatrizConAleatorios(tamanioMatriz, matriz);
 
 		// Crear un thread pool con tantos hilos como procesadores
 		int numProcesadores = 16;
@@ -80,15 +80,15 @@ public class MainThreadPool_Media {
 			int numProcesadores) throws InterruptedException, ExecutionException {
 		double resultado = 0;
 		for (Future<Double> futuro : resultadosMedia) {
-			resultado =+ futuro.get();
+			resultado = +futuro.get();
 		}
 		System.out.println("La media de los valores de la matriz es: " + resultado);
 	}
 	
-	private static void rellenarMatrizConAleatorios(int[][] matriz) {
+	private static void rellenarMatrizConAleatorios(int tamanioMatriz, int[][] matriz) {
 		Random rand = new Random();
-		for (int i = 0; i < matriz.length; i++) {
-			for (int j = 0; j < matriz[i].length; j++) {
+		for (int i = 0; i < tamanioMatriz; i++) {
+			for (int j = 0; j < tamanioMatriz; j++) {
 				matriz[i][j] = rand.nextInt(100) + 1;
 				//System.out.print(matriz[i][j] +" ");
 			}

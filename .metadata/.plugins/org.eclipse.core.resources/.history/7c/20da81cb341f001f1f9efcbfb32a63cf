@@ -17,7 +17,7 @@ public class MainThreadPool_Media {
 		int tamanioMatriz = 5; // tamaño de la matriz
 		int[][] matriz = new int[tamanioMatriz][tamanioMatriz];
 
-		rellenarMatrizConAleatorios(matriz);
+		rellenarMatrizConAleatorios(tamanioMatriz, matriz);
 
 		// Crear un thread pool con tantos hilos como procesadores
 		int numProcesadores = 16;
@@ -85,7 +85,7 @@ public class MainThreadPool_Media {
 		System.out.println("La media de los valores de la matriz es: " + resultado);
 	}
 	
-	private static void rellenarMatrizConAleatorios(int[][] matriz) {
+	private static void rellenarMatrizConAleatorios(int tamanioMatriz, int[][] matriz) {
 		Random rand = new Random();
 		for (int i = 0; i < matriz.length; i++) {
 			for (int j = 0; j < matriz[i].length; j++) {
