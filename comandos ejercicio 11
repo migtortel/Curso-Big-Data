@@ -1,0 +1,66 @@
+paso 2: 
+SELECT custid, movieid,
+CASE WHEN genreid > 0 THEN genreid ELSE -1 END genreid,
+time,
+CASE recommended WHEN 'Y' THEN 1 ELSE 0 END recommended,
+activity,
+price
+FROM movieapp_log_avro
+WHERE activity IN (2,4,5,11) LIMIT 25;
+
+
+paso 3: 
+SELECT m1.custid, m1.movieid, CASE WHEN m1.genreid > 0 THEN m1.genreid ELSE‐1 END genreid, m1.time, CASE m1.recommended WHEN 'Y'THEN 1 ELSE 0 END recommended, m1.activity, m1.rating FROM movieapp_log_avro m1 JOIN (SELECT custid, movieid, CASE WHEN genreid > 0 THEN genreid ELSE‐1 END genreid, MAX(time) max_time, activity FROM movieapp_log_avro GROUP BY custid, movieid, genreid, activity ) m2 ON ( m1.custid=m2.custid AND m1.movieid=m2.movieid AND m1.genreid=m2.genreid AND m1.time=m2.max_time AND m1.activity=1 AND m2.activity=1 ) LIMIT 25;
+
+paso 4: 
+CREATE TABLE
+movieapp_log_stage
+(
+custId INT,
+movieId INT,
+genreId INT,
+time STRING,
+recommended INT,
+activity INT,
+rating INT,
+sales FLOAT
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t';
+
+paso 5:
+INSERT OVERWRITE TABLE movieapp_log_stage
+SELECT * FROM (
+SELECT custid, movieid,
+CASE WHEN genreid > 0 THEN genreid ELSE -1 END genreid,
+time,
+CAST((CASE recommended WHEN 'Y' THEN 1 ELSE 0 END) AS INT)
+recommended,
+activity,
+cast(null AS INT) rating,
+price
+FROM movieapp_log_avro
+WHERE activity IN (2,4,5,11)
+UNION ALL
+SELECT m1.custid, m1.movieid,
+CASE WHEN m1.genreid > 0 THEN m1.genreid ELSE -1 END genreid,
+m1.time,
+CAST((CASE m1.recommended WHEN 'Y' THEN 1 ELSE 0 END) AS
+INT) recommended,
+m1.activity,
+m1.rating,
+cast(null as float) price
+FROM movieapp_log_avro m1
+JOIN
+(SELECT custid, movieid,CASE WHEN genreid > 0 THEN genreid ELSE -1 END genreid,
+MAX(time) max_time,
+activity
+FROM movieapp_log_avro
+GROUP BY custid, movieid, genreid, activity ) m2
+ON
+( m1.custid = m2.custid
+AND m1.movieid = m2.movieid
+AND m1.genreid = m2.genreid
+AND m1.time = m2.max_time
+AND m1.activity = 1
+AND m2.activity = 1 )
+) union_result;
