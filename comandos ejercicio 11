@@ -10,7 +10,21 @@ WHERE activity IN (2,4,5,11) LIMIT 25;
 
 
 paso 3: 
-SELECT m1.custid, m1.movieid, CASE WHEN m1.genreid > 0 THEN m1.genreid ELSE‐1 END genreid, m1.time, CASE m1.recommended WHEN 'Y'THEN 1 ELSE 0 END recommended, m1.activity, m1.rating FROM movieapp_log_avro m1 JOIN (SELECT custid, movieid, CASE WHEN genreid > 0 THEN genreid ELSE‐1 END genreid, MAX(time) max_time, activity FROM movieapp_log_avro GROUP BY custid, movieid, genreid, activity ) m2 ON ( m1.custid=m2.custid AND m1.movieid=m2.movieid AND m1.genreid=m2.genreid AND m1.time=m2.max_time AND m1.activity=1 AND m2.activity=1 ) LIMIT 25;
+SELECT m1.custid, m1.movieid, 
+CASE WHEN m1.genreid > 0 THEN m1.genreid ELSE‐1 END genreid, 
+m1.time, CASE m1.recommended WHEN 'Y'THEN 1 ELSE 0 END recommended, m1.activity, m1.rating 
+FROM movieapp_log_avro m1 JOIN (
+SELECT custid, movieid, 
+CASE WHEN genreid > 0 THEN genreid ELSE‐1 END genreid, MAX(time) max_time, activity 
+FROM movieapp_log_avro 
+GROUP BY custid, movieid, genreid, activity ) m2 
+ON ( m1.custid=m2.custid 
+AND m1.movieid=m2.movieid 
+AND m1.genreid=m2.genreid 
+AND m1.time=m2.max_time 
+AND m1.activity=1 
+AND m2.activity=1 
+) LIMIT 25;
 
 paso 4: 
 CREATE TABLE
