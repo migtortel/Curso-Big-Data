@@ -3,7 +3,7 @@ import json
 
 # Conectar a MongoDB
 client = pymongo.MongoClient("mongodb://localhost:27017/")
-db = client["empresa"]
+db = client.empresa #["empresa"]
 clientes_col = db["clientes"]
 
 # Cargar datos de clientes desde el archivo JSON
@@ -14,18 +14,26 @@ with open('clientes.json') as file:
 with open('ventas.json') as file:
     ventas_data = json.load(file)
 
-# Insertar clientes en la colección clientes
-clientes_col.insert_many(clientes_data)
-
-# Iterar sobre los datos de ventas y agregarlos a cada cliente correspondiente
+# Crear un diccionario para agrupar ventas por cliente_id
+ventas_por_cliente = {}
 for venta in ventas_data:
     cliente_id = venta["cliente_id"]
-    cliente = clientes_col.find_one({"_id": cliente_id})
-    if cliente:
-        if "ventas" in cliente:
-            cliente["ventas"].append(venta)
-        else:
-            cliente["ventas"] = [venta]
-        clientes_col.update_one({"_id": cliente_id}, {"$set": cliente})
+    if cliente_id not in ventas_por_cliente:
+        ventas_por_cliente[cliente_id] = []
+    ventas_por_cliente[cliente_id].append(venta)
+
+# Insertar clientes en la colección clientes con las ventas anidadas
+for cliente in clientes_data:
+    cliente_id = cliente["id"]
+    cliente["ventas"] = ventas_por_cliente.get(cliente_id, [])
+    clientes_col.insert_one(cliente)
 
 print("Datos insertados correctamente.")
+
+# Obtener todos los clientes con sus ventas
+cursor = clientes_col.find()
+for cliente in cursor:
+    print(f"Cliente: {cliente['nombre']}")
+    if "ventas" in cliente:
+        for venta in cliente['ventas']:
+            print(f"  Venta: Producto {venta['producto']} - Cantidad {venta['cantidad']} - Fecha {venta['fecha']}")

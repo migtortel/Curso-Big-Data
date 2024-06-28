@@ -15,22 +15,24 @@ def main():
     ventas = Ventas(conexion)
 
     # Borrar tablas
-    ventas.drop_tabla()
+   # ventas.drop_tabla()
     clientes.drop_tabla()
 
     # Crear las tablas
     clientes.crear_tabla()
     ventas.crear_tabla()
 
+    print("\n")
     # Insertar algunos datos
-    clientes.insertar_cliente("Juan Pérez", "Calle Principal 123", "123-456-7890")
-    clientes.insertar_cliente("Alicia Gómez", "Avenida Secundaria 456", "987-654-3210")
-
+    clientes.insertar_cliente("Juan Perez", "Calle Principal 123", "123-456-7890")
+    clientes.insertar_cliente("Alicia Gomez", "Avenida Secundaria 456", "987-654-3210")
+    print("\n")
     ventas.insertar_venta(1, "Producto A", 2, 19.99, "2024-06-27")
     ventas.insertar_venta(2, "Producto B", 1, 9.99, "2024-06-27")
+    ventas.insertar_venta(1, "Producto C", 5, 59.99, "2024-06-28")
 
     # Listar clientes y ventas
-    print("Clientes:")
+    print("\nClientes:")
     clientes.listar_clientes()
 
     print("\nVentas:")
