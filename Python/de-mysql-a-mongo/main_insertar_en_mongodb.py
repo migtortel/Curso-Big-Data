@@ -20,6 +20,8 @@ for venta in ventas_data:
     cliente_id = venta["cliente_id"]
     if cliente_id not in ventas_por_cliente:
         ventas_por_cliente[cliente_id] = []
+    # Eliminar campo 'cliente_id' de las ventas
+    del venta['cliente_id']
     ventas_por_cliente[cliente_id].append(venta)
 
 # Insertar clientes en la colección clientes con las ventas anidadas
